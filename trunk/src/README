@@ -1,0 +1,23 @@
+Source pour projet de TX52 : Travaux de laboratoire
+Déploiement des agents composant une Smart Grid dans des micro-contrôleurs
+
+*Communication entre une carte contenant un dsPIC33Fxx et une carte 
+  munie d'un processeur ARM11
+*Utilisation du modue CAN MCP2515 de la carte Real6410 (ARM)
+*Utilisation du module eCAN du PIC
+*Communication et mise en forme des signaux utile
+
+Compilation
+*arm-linux-gcc pour compiler les fichier destiné à l'ARM
+*Compilation avec MPLAB X, compilateur C30 pour le PIC33Fxx
+
+Fichier et dossiers
+*signalForm.h -> Mise en forme des informations pour la communication
+*IADataTransfert.h -> Transmission/réception des données avec l'IA
+*can.h -> transfert vers le PIC via le bus CAN
+
+TODO (par ordre de priorité)
+*canTransfert.h
+*signalForm.h
+*IADataTranfert.h
+*Makefile
