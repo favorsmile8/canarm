@@ -6,6 +6,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<fcntl.h>
+#include<unistd.h>
 
 /**
  * Open the driver for the mcp2515 module and initialise the CAN bus
@@ -30,3 +31,43 @@ int can_release(int fd)
 {
   return close(fd);
 }
+
+/*Write a buffer on the bus the len is in bytes, fd is the file descriptor 
+ *of the file to be written
+ */
+int can_write(char* buf, int len, int fd)
+{
+  int ret = 0;
+
+  /*The CAN protocol tolerate at max 8 bytes so if we need to transfert 
+   *more we have to loop*/
+  while(len > 0){
+    ret = write(fd, buf, len%9);
+
+    if(ret == -1)
+      break;
+    
+    len -= ret;
+    buf += ret;
+  }
+
+  return ret;
+}
+
+int can_read(char* buf, int len, int fd)
+{
+  int ret = 0;
+
+  while(len > 0){
+    ret = read(fd, buf, len%9);
+
+    if(ret == -1)
+      break;
+    
+    len -= ret;
+    buf += ret;
+  }
+
+  return ret;
+}
+
