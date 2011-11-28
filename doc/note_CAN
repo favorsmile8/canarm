@@ -1,0 +1,6 @@
+ioctl calls allows us to configure a bunch of option like
+ *bit rate -> CAN_IOCSRATE : do not understand yet how it works and what should be chosen
+ *set a filter -> CAN_IOCSFILTER : it is the ID of the message
+  I suppose that the ID can be chosen arbitrarily 
+ *modify the mode -> CAN_IOCTNORMALMODE, CAN_IOCTLOOPBACKMODE, CAN_IOCTLISTENONLYMODE, CAN_IOTSLEEPMODE
+  I don't know yet what it is, normal mode should be ok 
