@@ -1,9 +1,12 @@
 CC=arm-linux-gcc
-FILES=./lib/canTransfert
+FILES=./lib/canTransfert.o ./lib/signalForm.o
 FLAGS=-Wall -pedantic
 
-$(FILES).o:
-	$(CC) $(FLAGS) -c $(FILES).c
+main: main.c $(FILES)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
 	rm -f *.o *~ ./lib/*.o ./lib/*~

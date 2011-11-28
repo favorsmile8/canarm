@@ -54,7 +54,7 @@ int can_write(char* buf, int len, int fd)
   return ret;
 }
 
-int can_read(char* buf, int len, int fd)
+int can_read(void* buf, int len, int fd)
 {
   int ret = 0;
 
