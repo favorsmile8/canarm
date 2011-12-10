@@ -4,3 +4,22 @@ ioctl calls allows us to configure a bunch of option like
   I suppose that the ID can be chosen arbitrarily 
  *modify the mode -> CAN_IOCTNORMALMODE, CAN_IOCTLOOPBACKMODE, CAN_IOCTLISTENONLYMODE, CAN_IOTSLEEPMODE
   I don't know yet what it is, normal mode should be ok 
+
+
+CAN on dsPIC33F registers for ECAN are at page 58, DMA at pages 56-57
+ *Modes register CiCTRL1 and CiCTRL2
+  -initialisation mode : allows to change the configuration of the CAN 
+  -disable mode
+  -normal mode
+  -other modes are not usefull for us (listen only, listen all messages, loopback)
+ *Baud rate configuration registers CiCFG1 and CiCFG2
+ *Filter to be accepted : register CiFEN1
+ *CiRXFnSID register with identifier
+ *CiRXFUL1 register to control if receive buffer are full
+ *CiTRmnCON : TX/RX buffers control register
+ *ECAN message buffer are part of DMA RAM memory
+ *page 269 and after shows the different buffers for messages
+ ->if i understand correctly configuration of the ECAN module can be done through registers, but read/write
+   buffers are accessible through DMA only
+ ->it seems that CAN can be used without DMA (read in the ECAN_DMA doc from microship) even for read/write
+   operations
