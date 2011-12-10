@@ -24,7 +24,7 @@ typedef struct{
 
 /*Measurement mabe by the PIC and needed by IA*/
 typedef struct{
-  float current; /*current to take from or give to the device*/
+  int current; /*current to take from or give to the device*/
 }ARMtoPIC;
 
 
