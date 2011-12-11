@@ -5,13 +5,14 @@
 /*Configure the oscillator because we have to know it frequency for
  *bit timing configuration
  *Frequency is set to 40MHz*/
-_FOSCSEL(FNOSC_PRI);
-_FOSC(POSCMD_HS);
+_FOSCSEL(FNOSC_PRI)
+_FOSC(POSCMD_HS)
 #else
 #include <p33FJ128MC802.h>
 #endif
 
 #include<ecan.h>
+#include<dma.h>
 #include<string.h>
 
 void LEDon(int on);
@@ -23,9 +24,17 @@ int main()
     unsigned char data[8];
     unsigned char dataTX[8];
     int i = 0;
+    unsigned char RXbuffer[8] __attribute__((space(dma)));
+    unsigned char TXbuffer[8] __attribute__((space(dma)));
+    unsigned int DMA0STA = (int)RXbuffer - (int)_DMA_BASE;
+    unsigned int DMA0STB = (int)TXbuffer - (int)_DMA_BASE;
+
+    char tmp = 'a';
 
     memset(data, 0, 8);
-    memset(dataTX, 'a', 8);
+    /*memset(dataTX, 'a', 8);*/
+    for(i=0 ; i<8 ; i++)
+        dataTX[i] = tmp+i;
 
     /*Initialise ECAN module
      *With ecan.h functions I hope DMA is initialised
@@ -42,7 +51,7 @@ int main()
     CAN1Initialize(config1, config2);
 
     /*Configure FIFO*/
-    config1 = CAN_DMA_BUF_SIZE_32 & CAN_FIFO_AREA_RB9;
+    config1 = CAN_DMA_BUF_SIZE_32 & CAN_FIFO_AREA_TRB0/*CAN_FIFO_AREA_RB9*/;
 
     CAN1FIFOCon(config1);
 
@@ -55,7 +64,7 @@ int main()
     CAN1SetBUFPNT4(0x7788);
 
     /*Set the direction of each buffer*/
-    for(i=0 ; i<16 ; i++){
+    for(i=0 ; i<2 ; i++){
         /*buffer 0 : RX
          *buffer 1 : TX
          *...
@@ -68,7 +77,7 @@ int main()
      *other filter numbers could be used
      */
     config1 = CAN_FILTER_SID(1) & CAN_RX_EID_DIS;
-    config2 = CAN_FILTER_EID(0) & CAN_FILTER_EID(1);
+    config2 = CAN_FILTER_EID(0);
     CAN1SetFilter(1, config1, config2);
 
     /*Set operation mode : loopback to test -> put it in normal when it works*/
@@ -80,20 +89,43 @@ int main()
 
     CAN1SetOperationMode(config1, config2);
 
+    /*Initialize DMA transfert*/
+    config1 = DMA0_MODULE_ON &
+            DMA0_SIZE_BYTE &
+            DMA0_TO_PERIPHERAL &
+            DMA0_INTERRUPT_BLOCK &
+            DMA0_NORMAL &
+            DMA0_REGISTER &
+            DMA0_ONE_SHOT;
+
+    /*Receive buffer*/
+    OpenDMA0(config1, DMA0_AUTOMATIC, DMA0STA, 0, 0x0442, 8);
+
+    config1 = DMA0_MODULE_ON &
+            DMA0_SIZE_BYTE &
+            PERIPHERAL_TO_DMA0 &
+            DMA0_INTERRUPT_BLOCK &
+            DMA0_NORMAL &
+            DMA0_REGISTER &
+            DMA0_ONE_SHOT;
+
+    /*Receive buffer*/
+    OpenDMA0(config1, DMA0_AUTOMATIC, DMA0STB, 0, 0x0440, 8);
+
     /*loop*/
     while(1){
         /*Send message for test purpose*/
-        while(!CAN1IsTXReady(1));
+        while(CAN1IsTXReady(1) == 0);
         /*send a message
          *length 8 bytes, filter 1, Standard ID, data frame,
          *DMAptr, buffer from which to send
          */
-        CAN1SendMessage(dataTX, 8, 1, 0, 0, C1TXD, 1);
+        CAN1SendMessage(dataTX, 8, 1, 0, 0, DMA0STA, 1);
 
         /*Read CAN bus*/
-        while(!CAN1IsRXReady(0));
+        //while(CAN1IsRXReady(0) == 1);
         /*Receive buffer is full*/
-        CAN1ReceiveMessage(data, 8, C1RXD);
+        CAN1ReceiveMessage(data, 8, DMA0STB);
 
         /*Test if the message transmission is successful
          *If yes turn the led on

@@ -69,15 +69,7 @@ MP_LD_DIR="/opt/microchip/mplabc30/v3.30c/bin"
 MP_AR_DIR="/opt/microchip/mplabc30/v3.30c/bin"
 # MP_BC_DIR is not defined
 
-# The following macros may be used in the pre and post step lines
-Device=dsPIC33FJ64MC802
-ProjectDir=/home/sylvain/Documents/UVs/TX52/canarm/src/CAN_dsPIC33F.X
-ConfName=default
-ImagePath=dist/default/${IMAGE_TYPE}/CAN_dsPIC33F.X.${IMAGE_TYPE}.out
-ImageDir=dist/default/${IMAGE_TYPE}
-ImageName=CAN_dsPIC33F.X.${IMAGE_TYPE}.out
-
-.build-conf:  .pre ${BUILD_SUBPROJECTS}
+.build-conf:  ${BUILD_SUBPROJECTS}
 	${MAKE}  -f nbproject/Makefile-default.mk dist/${CND_CONF}/${IMAGE_TYPE}/CAN_dsPIC33F.X.${IMAGE_TYPE}.out
 
 MP_PROCESSOR_OPTION=33FJ64MC802
@@ -101,14 +93,14 @@ ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/main.o.d 
 	@${RM} ${OBJECTDIR}/main.o.ok ${OBJECTDIR}/main.o.err 
-	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -omf=elf -x c -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c  
+	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -c ${MP_CC} $(MP_EXTRA_CC_PRE) -g -D__DEBUG  -omf=elf -x c -c -mcpu=$(MP_PROCESSOR_OPTION) -Wall -pedantic -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c  
 	
 else
 ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} ${OBJECTDIR} 
 	@${RM} ${OBJECTDIR}/main.o.d 
 	@${RM} ${OBJECTDIR}/main.o.ok ${OBJECTDIR}/main.o.err 
-	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -omf=elf -x c -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c  
+	@${FIXDEPS} "${OBJECTDIR}/main.o.d" $(SILENT) -c ${MP_CC} $(MP_EXTRA_CC_PRE)  -g -omf=elf -x c -c -mcpu=$(MP_PROCESSOR_OPTION) -Wall -pedantic -MMD -MF "${OBJECTDIR}/main.o.d" -o ${OBJECTDIR}/main.o main.c  
 	
 endif
 
@@ -125,11 +117,6 @@ dist/${CND_CONF}/${IMAGE_TYPE}/CAN_dsPIC33F.X.${IMAGE_TYPE}.out: ${OBJECTFILES} 
 	${MP_CC_DIR}/pic30-bin2hex dist/${CND_CONF}/${IMAGE_TYPE}/CAN_dsPIC33F.X.${IMAGE_TYPE}.out -omf=elf
 endif
 
-.pre:
-	@echo "--------------------------------------"
-	@echo "User defined pre-build step: []"
-	@
-	@echo "--------------------------------------"
 
 # Subprojects
 .build-subprojects:
