@@ -10,6 +10,7 @@
 int can_init();
 int can_release(int fd);
 int can_write(char* buf, int len, int fd);
+int can_write_test(int* buf, int len, int fd);
 int can_read(void* buf, int len, int fd);
 
 #endif /*_CAN_TRANSFERT_H__*/
