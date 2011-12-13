@@ -7,6 +7,9 @@
 #include<string.h>
 #include<fcntl.h>
 #include<unistd.h>
+#include<sys/ioctl.h>
+#include "can/mcp251x.h"
+#include "can/can.h"
 
 /**
  * Open the driver for the mcp2515 module and initialise the CAN bus
@@ -53,6 +56,22 @@ int can_write(char* buf, int len, int fd)
 
   return ret;
 }
+
+
+int can_write_test(char* buf, int len, int fd)
+{
+  int ret = 0;
+  ret = write(fd, buf, len);
+  return ret;
+}
+
+int can_read_test(void* buf, int len, int fd)
+{
+  int ret = 0;
+  ret = read(fd, buf, len);
+  return ret;
+}
+
 
 int can_read(void* buf, int len, int fd)
 {

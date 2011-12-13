@@ -1,5 +1,5 @@
 CC=arm-linux-gcc
-FILES=./lib/canTransfert.o ./lib/signalForm.o
+FILES=./lib/canTransfert.o ./lib/signalForm.o 
 FLAGS=-Wall -pedantic
 
 main: main.c $(FILES)
