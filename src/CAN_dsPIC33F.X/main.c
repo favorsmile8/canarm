@@ -79,6 +79,7 @@ typedef struct{
 #define CAN_BUF_FULL 0x05
 
 mID canRxMessage;
+void rxECAN(mID * message);
 
 /* Interrupt Service Routine 1
  No fast context save, and no variables stacked */
@@ -98,7 +99,7 @@ void __attribute__((interrupt, no_auto_psv))_C1Interrupt(void)
         else if(C1RXFUL1bits.RXFUL2)
         {
             /* set the buffer full flag and the buffer received flag */
-            canRxMessage.buffer_status+CAN_BUF_FULL;
+            canRxMessage.buffer_status=CAN_BUF_FULL;
             canRxMessage.buffer=2;
         }
         /* check to see if buffer 3 is full */
@@ -188,8 +189,10 @@ int main()
     
     LEDon(0);
 
-    C1CTRL1bits.REQOP=2;
-    while (C1CTRL1bits.OPMODE!=2);
+    C1CTRL1bits.WIN = 0x0;
+
+    C1CTRL1bits.REQOP=0x4;
+    while (C1CTRL1bits.OPMODE!=0x4);
 
     /* FCAN is selected to be FCY */
     /* FCAN = FCY = 40 MHz */
@@ -220,6 +223,8 @@ int main()
     /*Assign 4 buffers*/
     C1FCTRLbits.DMABS = 0x0;
 
+    C1CTRL1bits.WIN = 0x1;
+
     /* Select acceptance mask 0 filter 0 buffer 1 */
     C1FMSKSEL1bits.F0MSK = 0;
     /* Configure acceptance mask - match the ID in filter 0 */
@@ -240,6 +245,8 @@ int main()
     /* Enable filter 0 */
     C1FEN1bits.FLTEN0 = 1;
 
+    C1CTRL1bits.WIN = 0x0;
+    
     /*Put the module in normal mode*/
     C1CTRL1bits.REQOP = 0x2;
     while(C1CTRL1bits.OPMODE != 0x2);
@@ -254,6 +261,8 @@ int main()
     /* Set up Channel 0 for peripheral indirect addressing mode normal operation, word operation */
     /* and select TX to peripheral */
     DMA0CON = 0x2020;
+    /*Set the peripheral IRQ number*/
+    DMA0REQbits.IRQSEL = 0x46;
     /* Set up the address of the peripheral ECAN1 (C1TXD) */
     DMA0PAD = 0x0442;
     /* Set the data block transfer size of 8 */
@@ -269,6 +278,8 @@ int main()
     /* Set up Channel 2 for Peripheral Indirect addressing mode (normal operation, word operation */
     /* and select as RX to peripheral */
     DMA2CON = 0x0020;
+    /*Set the peripheral IRQ number*/
+    DMA2REQbits.IRQSEL = 0x22;
     /* Set up the address of the peripheral ECAN1 (C1RXD) */
     DMA2PAD = 0x0440;
     /* Set the data block transfer size of 8 */
@@ -280,20 +291,27 @@ int main()
     /* Enable the channel */
     DMA2CONbits.CHEN = 1;
 
+    /*Enable user interrupt*/
+    SRbits.IPL = 0;
+
     /*Set the priority of interrupt*/
-    IPC17bits.C1TXIP = 0x110;
-    IPC8bits.C1RXIP = 0x110;
+    IPC17bits.C1TXIP = 0b110;
+    IPC8bits.C1RXIP = 0b110;
+
+    /* clear flag */
+    C1INTFbits.RBIF = 0;
+    C1INTFbits.TBIF = 0;
+    IFS2bits.C1IF = 0;
 
     /* Enable ECAN1 interrupt */
     IEC2bits.C1IE = 1;
     /* Enable transmit interrupt */
     C1INTEbits.TBIE = 1;
-
     /* Enable ECAN1 receive Interrupt */
     C1INTEbits.RBIE = 1;
 
     /*Save state of the DMA buffer for test purpose*/
-    mID tmp;
+    char tmp[8];
 
     /*Write message*/
     mID msg;
@@ -351,18 +369,27 @@ int main()
     }
 
     /* set the message for transmission*/
-    if(C1TR01CONbits.TXREQ0 != 1){
+    //if(C1TR01CONbits.TXREQ0 != 1){
         C1TR01CONbits.TXREQ0=1;
-    }
+        while(C1TR01CONbits.TXREQ0 == 1);
+    //}
 
     /*Receive the message*/
     //while(canRxMessage.buffer_status != CAN_BUF_FULL);
 
-    rxECAN(&canRxMessage);
+    /*rxECAN(&canRxMessage);
     memcpy(tmp.data, canRxMessage.data, 8);
 
     if(memcmp(tmp.data, msg.data, msg.data_length) == 0)
         LEDon(1);
+*/
+
+    while(C1RXFUL1bits.RXFUL1 == 0);
+
+    memcpy(tmp, &ecan1msgBuf[1][3], 8);
+
+    /*Disable user interrupts*/
+    SRbits.IPL = 7;
 
     return 0;
 }
