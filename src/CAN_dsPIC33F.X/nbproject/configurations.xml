@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>ecan_dma.h</itemPath>
       <itemPath>/opt/microchip/mplabc30/v3.30c/support/dsPIC33F/h/p33FJ128MC802.h</itemPath>
       <itemPath>/opt/microchip/mplabc30/v3.30c/support/dsPIC33F/h/p33FJ64MC802.h</itemPath>
     </logicalFolder>
@@ -87,8 +88,8 @@
       </C30-LD>
       <C30Global>
         <property key="fast-math" value="false"/>
-        <property key="legacy-libc" value="false"/>
         <property key="output-file-format" value="elf"/>
+        <property key="legacy-libc" value="false"/>
       </C30Global>
       <MICROSTICKPlatformTool>
       </MICROSTICKPlatformTool>
