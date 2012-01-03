@@ -29,8 +29,6 @@ typedef unsigned int ECAN1MSGBUF[ECAN1_MSG_BUF_LENGTH][8];
  */
 ECAN1MSGBUF ecan1msgBuf __attribute__((space(dma),aligned(ECAN1_MSG_BUF_LENGTH*16)));
 
-mID canRxMessage;
-
 /* Interrupt Service Routine 1
  No fast context save, and no variables stacked */
 void __attribute__((interrupt, no_auto_psv))_C1Interrupt(void)
@@ -41,23 +39,17 @@ void __attribute__((interrupt, no_auto_psv))_C1Interrupt(void)
         /*check to see if buffer 1 is full */
         if(C1RXFUL1bits.RXFUL1)
         {
-            /* set the buffer full flag and the buffer received flag */
-            canRxMessage.buffer_status=CAN_BUF_FULL;
-            canRxMessage.buffer=1;
+            /* Buffer 1 full */
         }
         /* check to see if buffer 2 is full */
         else if(C1RXFUL1bits.RXFUL2)
         {
-            /* set the buffer full flag and the buffer received flag */
-            canRxMessage.buffer_status=CAN_BUF_FULL;
-            canRxMessage.buffer=2;
+            /* Buffer 2 full */
         }
         /* check to see if buffer 3 is full */
         else if(C1RXFUL1bits.RXFUL3)
         {
-            /* set the buffer full flag and the buffer received flag */
-            canRxMessage.buffer_status=CAN_BUF_FULL;
-            canRxMessage.buffer=3;
+            /* Buffer 3 full */
         }
 
         /* clear flag */
@@ -76,93 +68,36 @@ void __attribute__((interrupt, no_auto_psv))_C1Interrupt(void)
 /**
  * Prototypes
  */
-void rxECAN(mID * message);
 void LEDon(int on);
 void initOSC();
-void initECAN();
+void initECAN(int mode, unsigned long id);
 void initDMA();
+void sendMsg(unsigned long id, char buf[8], unsigned char canFrameType);
+void recvMsg(unsigned char bufNbr, unsigned long* id, char rcv[8]);
 void initInterrupt();
 void disableUserInterrupt();
 
 int main()
 {
     /*Save state of the DMA buffer for test purpose*/
-    char tmp[8];
-
-    /*Write message*/
-    mID msg;
-    mID* message = &msg;
-    unsigned long word0 = 0;
-    unsigned long word1 = 0;
-    unsigned long word2 = 0;
+    char rcv[8];
+    unsigned long id = 0;
 
     initOSC();
-    
-    LEDon(0);
 
-    initECAN();
+    initECAN(CAN_LOOPBACK_MODE, 0x42);
 
     initDMA();
     
-    initInterrupt();
-    
-    memset(msg.data, 42, 8);
-    msg.data_length = 8;
-    msg.id = 0x123;
-    msg.message_type = CAN_MSG_DATA;
-    msg.frame_type = CAN_FRAME_STD;
-    msg.buffer = 0;
+    //initInterrupt();
 
-    /* check to see if the message has an extended ID */
-    if(message->frame_type==CAN_FRAME_EXT)
-    {
-        /* get the extended message id EID28..18*/
-        word0=(message->id & 0x1FFC0000) >> 16;
-        /* set the SRR and IDE bit */
-        word0=word0+0x0003;
-        /* the the value of EID17..6 */
-        word1=(message->id & 0x0003FFC0) >> 6;
-        /* get the value of EID5..0 for word 2 */
-        word2=(message->id & 0x0000003F) << 10;
-    }
-    else
-    {
-        /* get the SID */
-        word0=((message->id & 0x000007FF) << 2);
-    }
-    /* check to see if the message is an RTR message */
-    if(message->message_type==CAN_MSG_RTR)
-    {
-        if(message->frame_type==CAN_FRAME_EXT)
-        word2=word2 | 0x0200;
-        else
-        word0=word0 | 0x0002;
-        ecan1msgBuf[message->buffer][0]=word0;
-        ecan1msgBuf[message->buffer][1]=word1;
-        ecan1msgBuf[message->buffer][2]=word2;
-    }
-    else
-    {
-        word2=word2+(message->data_length & 0x0F);
-        ecan1msgBuf[message->buffer][0]=word0;
-        ecan1msgBuf[message->buffer][1]=word1;
-        ecan1msgBuf[message->buffer][2]=word2;
-        /* fill the data */
-        ecan1msgBuf[message->buffer][3]=((message->data[1] << 8) + message->data[0]);
-        ecan1msgBuf[message->buffer][4]=((message->data[3] << 8) + message->data[2]);
-        ecan1msgBuf[message->buffer][5]=((message->data[5] << 8) + message->data[4]);
-        ecan1msgBuf[message->buffer][6]=((message->data[7] << 8) + message->data[6]);
+    while(1){
+        sendMsg(0x42, "azertyui", CAN_FRAME_STD);
+        
+        recvMsg(1, &id, rcv);
     }
 
-    /* set the message for transmission*/
-    C1TR01CONbits.TXREQ0=1;
-    while(C1TR01CONbits.TXREQ0 == 1);
-
-    while(C1RXFUL1bits.RXFUL1 == 0);
-
-    memcpy(tmp, &ecan1msgBuf[1][3], 8);
-
-    disableUserInterrupt();
+    //disableUserInterrupt();
 
     return 0;
 }
@@ -172,55 +107,6 @@ void LEDon(int on)
     TRISBbits.TRISB15 = 0;
 
     LATBbits.LATB15 = on;
-}
-
-void rxECAN(mID * message)
-{
-    unsigned int ide=0;
-    unsigned int rtr=0;
-    unsigned long id=0;
-    /* check to see what type of message it is
-    */
-    /* message is standard identifier
-    */
-    if(ide==0)
-    {
-        message->id=(ecan1msgBuf[message->buffer][0] & 0x1FFC) >> 2;
-        message->frame_type=CAN_FRAME_STD;
-        rtr=ecan1msgBuf[message->buffer][0] & 0x0002;
-    }
-    /* mesage is extended identifier */
-    else
-    {
-        id=ecan1msgBuf[message->buffer][0] & 0x1FFC;
-        message->id=id << 16;
-        id=ecan1msgBuf[message->buffer][1] & 0x0FFF;
-        message->id=message->id+(id << 6);
-        id=(ecan1msgBuf[message->buffer][2] & 0xFC00) >> 10;
-        message->id=message->id+id;
-        message->frame_type=CAN_FRAME_EXT;
-        rtr=ecan1msgBuf[message->buffer][2] & 0x0200;
-    }
-    /* check to see what type of message it is */
-    /* RTR message */
-    if(rtr==1)
-    {
-        message->message_type=CAN_MSG_RTR;
-    }
-    /* normal message */
-    else
-    {
-        message->message_type=CAN_MSG_DATA;
-        message->data[0]=(unsigned char)ecan1msgBuf[message->buffer][3];
-        message->data[1]=(unsigned char)((ecan1msgBuf[message->buffer][3] & 0xFF00) >> 8);
-        message->data[2]=(unsigned char)ecan1msgBuf[message->buffer][4];
-        message->data[3]=(unsigned char)((ecan1msgBuf[message->buffer][4] & 0xFF00) >> 8);
-        message->data[4]=(unsigned char)ecan1msgBuf[message->buffer][5];
-        message->data[5]=(unsigned char)((ecan1msgBuf[message->buffer][5] & 0xFF00) >> 8);
-        message->data[6]=(unsigned char)ecan1msgBuf[message->buffer][6];
-        message->data[7]=(unsigned char)((ecan1msgBuf[message->buffer][6] & 0xFF00) >> 8);
-        message->data_length=(unsigned char)(ecan1msgBuf[message->buffer][2] & 0x000F);
-    }
 }
 
 void initOSC()
@@ -234,12 +120,18 @@ void initOSC()
     CLKDIVbits.PLLPRE = 0;
 }
 
-void initECAN()
+/**
+ * Configure the buffer 0 in transmit and the buffer 1 in receive for standard
+ * frames to accept the messages with identifier id
+ * @param mode
+ * @param id
+ */
+void initECAN(int mode, unsigned long id)
 {
     C1CTRL1bits.WIN = 0x0;
 
-    C1CTRL1bits.REQOP=0x4;
-    while (C1CTRL1bits.OPMODE!=0x4);
+    C1CTRL1bits.REQOP=CAN_CONFIGURATION_MODE;
+    while (C1CTRL1bits.OPMODE!=CAN_CONFIGURATION_MODE);
 
     /* FCAN is selected to be FCY */
     /* FCAN = FCY = 40 MHz */
@@ -283,7 +175,7 @@ void initECAN()
     /* Set up the filter to accept a standard ID of 0x123, the macro when called as */
     /* CAN_FILTERMASK2REG_SID(0x123) will write the register C1RXF0SID to only accept standard */
     /* ID of 0x123 */
-    C1RXF0SID=CAN_FILTERMASK2REG_SID(0x123);
+    C1RXF0SID=CAN_FILTERMASK2REG_SID(id);
     /* Set filter to check for standard ID and accept standard ID only */
     CAN_SETMIDE(C1RXM0SID);
     CAN_FILTERSTD(C1RXF0SID);
@@ -295,8 +187,8 @@ void initECAN()
     C1CTRL1bits.WIN = 0x0;
 
     /*Put the module in normal mode*/
-    C1CTRL1bits.REQOP = 0x2;
-    while(C1CTRL1bits.OPMODE != 0x2);
+    C1CTRL1bits.REQOP = mode;
+    while(C1CTRL1bits.OPMODE != mode);
 
     C1TR01CONbits.TXEN0 = 1;/* ECAN1, Buffer 0 is a Transmit Buffer */
     C1TR01CONbits.TXEN1 = 0;/* ECAN1, Buffer 1 is a Receive Buffer */
@@ -361,6 +253,100 @@ void initInterrupt()
     C1INTEbits.TBIE = 1;
     /* Enable ECAN1 receive Interrupt */
     C1INTEbits.RBIE = 1;
+}
+
+/**
+ * Send the message with identifier id which data are buf
+ * @param id
+ * @param buf
+ * @param canFrameType : can be CAN_FRAME_STD (standard frame)
+ * or CAN_FRAME_EXT (extended frame)
+ */
+void sendMsg(unsigned long id, char buf[8], unsigned char canFrameType)
+{
+    /*Write message*/
+    mID msg;
+    unsigned long word0 = 0;
+    unsigned long word1 = 0;
+    unsigned long word2 = 0;
+
+    msg.data_length = 8;
+    msg.id = id;
+    msg.message_type = CAN_MSG_DATA;
+    msg.frame_type = canFrameType;
+    /*Send from buffer 0*/
+    msg.buffer = 0;
+
+    /* check to see if the message has an extended ID */
+    if(msg.frame_type==CAN_FRAME_EXT)
+    {
+        /* get the extended message id EID28..18*/
+        word0=(msg.id & 0x1FFC0000) >> 16;
+        /* set the SRR and IDE bit */
+        word0=word0+0x0003;
+        /* the the value of EID17..6 */
+        word1=(msg.id & 0x0003FFC0) >> 6;
+        /* get the value of EID5..0 for word 2 */
+        word2=(msg.id & 0x0000003F) << 10;
+    }
+    else
+    {
+        /* get the SID */
+        word0=((msg.id & 0x000007FF) << 2);
+    }
+    /* check to see if the message is an RTR message */
+    if(msg.message_type==CAN_MSG_RTR)
+    {
+        if(msg.frame_type==CAN_FRAME_EXT)
+        word2=word2 | 0x0200;
+        else
+        word0=word0 | 0x0002;
+        ecan1msgBuf[msg.buffer][0]=word0;
+        ecan1msgBuf[msg.buffer][1]=word1;
+        ecan1msgBuf[msg.buffer][2]=word2;
+    }
+    else
+    {
+        word2=word2+(msg.data_length & 0x0F);
+        ecan1msgBuf[msg.buffer][0]=word0;
+        ecan1msgBuf[msg.buffer][1]=word1;
+        ecan1msgBuf[msg.buffer][2]=word2;
+        /* fill the data */
+        ecan1msgBuf[msg.buffer][3]=((buf[1] << 8) + buf[0]);
+        ecan1msgBuf[msg.buffer][4]=((buf[3] << 8) + buf[2]);
+        ecan1msgBuf[msg.buffer][5]=((buf[5] << 8) + buf[4]);
+        ecan1msgBuf[msg.buffer][6]=((buf[7] << 8) + buf[6]);
+    }
+
+    /* set the message for transmission*/
+    C1TR01CONbits.TXREQ0=1;
+    while(C1TR01CONbits.TXREQ0 == 1);
+}
+
+/**
+ * Receive a message in buffer bufNbr return the id and the message
+ * @param bufNbr
+ * @param id
+ * @param rcv
+ */
+void recvMsg(unsigned char bufNbr, unsigned long* id, char rcv[8])
+{
+    if(bufNbr < 16)
+        while((C1RXFUL1 & (1 << bufNbr)) == 0);
+    else
+        while((C1RXFUL2 & (1 << (bufNbr-16))) == 0);
+
+    /*Check if the id is std or ext*/
+    if((ecan1msgBuf[bufNbr][0] & 0x1) == 0)
+        *id = (ecan1msgBuf[bufNbr][0] & 0x1FFC) >> 2;
+    else
+        *id = (ecan1msgBuf[bufNbr][1] & 0xFFF) +
+                ((ecan1msgBuf[bufNbr][2] & 0xFC00) >> 10);
+
+    memcpy(rcv, &ecan1msgBuf[1][3], 8);
+
+    /*Clear RXFULi bit*/
+    C1RXFUL1 &= ~(1 << bufNbr);
 }
 
 void disableUserInterrupt()

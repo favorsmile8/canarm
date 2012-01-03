@@ -55,5 +55,9 @@ typedef struct{
 #define CAN_FRAME_STD 0x04
 #define CAN_BUF_FULL 0x05
 
+/*Usefull modes of the can bus*/
+#define CAN_CONFIGURATION_MODE 0x4
+#define CAN_LOOPBACK_MODE 0x2
+#define CAN_NORMAL_MODE 0x0
 
 #endif /*__ECAN_DMA_H__*/
