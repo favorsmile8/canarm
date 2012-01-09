@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   int fd = can_init();
   int len;
   
-  ioctl(fd, CAN_IOCTLOOPBACKMODE); // Loopback mode
+//  ioctl(fd, CAN_IOCTLOOPBACKMODE); // Loopback mode
   ioctl(fd, CAN_IOCSFILTER, &filter);  
   ioctl(fd, CAN_IOCSRATE, 250000);
 
