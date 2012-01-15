@@ -1,0 +1,90 @@
+\documentclass[a4,french,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue,unicode=true]{hyperref}
+\usepackage[pdftex]{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\hypersetup{
+  pdftitle={Rapport TX52}
+}
+
+\begin{document}
+
+
+\begin{titlepage}
+\begin{center}
+% Upper part of the page
+
+% Title
+\HRule \\[0.4cm]
+{ \huge \bfseries Déploiement des agents composant une Smart Grid dans des micro-contrôleurs}\\[0.4cm]
+ 
+\HRule \\[1.5cm]
+%\includegraphics[width=0.60\textwidth]{images/real6410.jpg}\\[1.5cm]
+% Author and supervisor
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+
+%autheurs
+Nicolas \textsc{Ennaji} \\
+Sylvain \textsc{Marchand} 
+
+\end{flushleft}
+\end{minipage}
+
+\vfill 
+% Bottom of the page
+{\large TX52 - UTBM - A11}
+
+\end{center}
+\end{titlepage}
+
+%Sommaire
+\tableofcontents
+
+\newpage
+
+\section{Installation et prise en main de la carte Real6410}
+\subsection{Installation du kernel linux et de l'interface graphique}
+Une première installation de la carte a été faite en suivant les indications de la documentation. Avec cette configuration 
+l'écran n'était pas reconnu. \\
+Nous avons alors recompilé le bootloader, et le kernel, afin que le driver soit intégré dans le kernel. Nous avons alors 
+réussit à faire fonctionner l'écran en mode pas tactile. \\
+Finalement, nous avons réinstallé le bootloader, le kernel, et qtopia en mode par défaut, mais en remplaçant le fichier 
+\texttt{bootloader\_mmc} indiqué dans la documentation, par le fichier \texttt{bootloader}. Le fichier mmc permet en fait de booter depuis la 
+carte SD, tandis que l'autre est fait pour booter depuis la flash de la carte. %Nous avons fait une version modifiée de la 
+%documentation, simplifiée et corrigée pour installer la carte sans problème (pour une configuration de base) avec l'écran :
+%Howto\_install\_linuxReal6410.pdf .\\
+\subsection{Prise en main de la carte}
+Nous avons commencé par créer et tester un programme de base, utilisant des sockets tcp, afin de tester la communication entre 
+la carte et un ordinateur ``classique''. Grâce au système linux de la carte, ceci c'est fait sans problème. \\
+Les programmes pour la cartes sont cross-comilé, donc compilé depuis un ordinateur x86, avec \texttt{arm-linux-gcc}. Cette 
+variante de ggc pour processeurs ARM s'utilise exactement de la même façon qu'un gcc classique. Nous avons alors fait un 
+\texttt{Makefile} pour le projet de la manière qu'on l'aurait fait pour compiler pour une machine x86. \\
+Nous avons aussi pu avoir accèss à la carte par telnet. Au départ cette connection était possible sans aucune authentification 
+en root. Nous avons donc ajouté un mot de passe (peu sécurisé) : root.
+
+\newpage
+\section{La communication}
+\subsection{IA - Real6410}
+
+\subsection{Real6410 - matériel}
+\subsubsection{Le bus CAN}
+
+\subsubsection{Côté Real6410}
+
+\subsubsection{Côté Matériel}
+
+\newpage
+\section{Résultats}
+
+\newpage
+%sources si il en faut
+\section{Bibliographie}
+
+\end{document}
