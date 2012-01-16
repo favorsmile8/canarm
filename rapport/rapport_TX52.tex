@@ -75,6 +75,17 @@ en root. Nous avons donc ajouté un mot de passe (peu sécurisé) : root.
 
 \subsection{Real6410 - matériel}
 \subsubsection{Le bus CAN}
+Afin de communiquer entre la carte Real6410 et le matériel, la solution choisi est le bus CAN (Control Area Network). Cette 
+solution a été choisie en raison de sa tolérence aux interférences, et de la possibilité de pouvoir relié des noeuds même 
+éloignés. \\
+Le bus CAN est implémenté sur la carte Real6410, il y a même un driver dans le noyau linux. De l'autre côté, une carte 
+basée sur un dsPIC33F permet de piloter les batteries, et supercapacités. Le module eCAN du pic est utilisé pour 
+communiquer avec la carte ARM. Nous avons donc implémenté la communication par bus CAN sur la carte PIC, et la carte ARM, 
+le pilotage en des batteries quant à lui est fait par un technicien de GESC. \\
+Le bus CAN est basé sur un système de messages avec un identifiant (standard ou étendu), chaque message envoyé est transmit 
+à tous les noeuds du réseau, et chaque noeud récupère seulement les messages avec les identifiants qu'ils souhaites. Cette 
+particularité permettra par la suite de différencier les différents types de matériels présent sur la smart grid 
+(producteur, consommateurs, stockage).
 
 \subsubsection{Côté Real6410}
 
