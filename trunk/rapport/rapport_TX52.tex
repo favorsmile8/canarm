@@ -90,6 +90,25 @@ particularité permettra par la suite de différencier les différents types de 
 \subsubsection{Côté Real6410}
 
 \subsubsection{Côté Matériel}
+Du côté matériel, on utilise le module eCAN du dsPIC33F, pour communiquer avec la carte qui supportera l'IA. Pour ce faire, 
+on utilise un composant (le mcp2551) qui permet de transformer du spi en CAN. Grâce au module eCAN, nous pouvons 
+``facilement'' utiliser le bus CAN. \\
+La spécificité du bus CAN avec ce PIC est qu'il utilise de la DMA afin de lire et écrire les buffers d'entrée/sortie. Cela 
+demande un peu de configuration, mais permet d'économiser des ressources pour le processeur. \\
+Les fonction suivante ont été implémentées, afin d'être utiliser pour la communication.
+\begin{itemize}
+\item \texttt{void initOSC()} : Initilise l'horloge du PIC pour pouvoir maitriser la vitesse du bus CAN.
+\item \texttt{void initECAN(int mode, unsigned long id)} : Initialise le bus CAN en mode mode (normal, loopback...) avec un buffer 
+  en envoi et un en réception. Le buffer de réception reçoit les messages avec l'identifiant id.
+\item \texttt{void initDMA()} : Initialise le buffer DMA, pour l'envoi et la réception de paquets.
+\item \texttt{void sendMsg(unsigned long id, char buf[8], unsigned char canFrameType)} : envoie le message contenu dans 
+  buf avec l'identifiant id, du type (standard ou étendu).
+\item \texttt{void recvMsg(unsigned char bufNbr, unsigned long* id, char rcv[8])} : Réception d'un message. L'identifiant 
+  est retourné dans id, et le message est copié dans rcv.
+\end{itemize}
+Pour le moment les identifiants ne peuvent être que standards. Il y a possibilité d'utiliser de interruptions, mais cela 
+n'a pas été testé. Pour ce faire il faut appeler \texttt{void initInterrupt()}, et compléter la fonction d'interruption : 
+\texttt{void \_\_attribute\_\_((interrupt, no\_auto\_psv))\_C1Interrupt(void)}.
 
 \newpage
 \section{Résultats}
