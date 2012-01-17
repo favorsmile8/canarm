@@ -112,6 +112,23 @@ n'a pas été testé. Pour ce faire il faut appeler \texttt{void initInterrupt()
 
 \newpage
 \section{Résultats}
+\subsection{Bus CAN sur le dsPIC33F}
+Les captures d'écran qui suivent, montrent dans le debbuger les resultats obtenu pour la communication par le bus CAN en mode 
+loopback. \\
+\\
+\includegraphics[width=0.8\textwidth]{images/CAN_avant_envoi.png}\\
+\\
+%\caption{Etat des buffers d'envoi et de réception avant l'envoi des données}
+\\
+\includegraphics[width=0.8\textwidth]{images/CAN_avant_reception.png}\\
+%\caption{Etat des buffers d'envoi et de réception avant réception des données}
+\\
+\includegraphics[width=0.8\textwidth]{images/CAN_apres_reception.png}\\
+%\caption{Etat des buffers d'envoi et de réception après réception des données}
+\\
+On peut voir par ces captures, que dans un premier temps le buffer d'envoi (le 0) est vide. Ensuite celui ci est rempli par 
+la fonction \texttt{sendMsg}. Avant que le bit de requète de l'envoi ne soit mis à 1 (à la fin de la fonction \texttt{sendMsg}), 
+le buffer de réception reste vide. Les données sont ensuite reçues dans ce buffer, comme le montre la dernière capture.
 
 \newpage
 %sources si il en faut
