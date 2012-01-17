@@ -49,6 +49,17 @@ Sylvain \textsc{Marchand}
 
 \newpage
 
+\section{Description du projet}
+  \subsection{Principe}
+Le principe du projet peut être représenter par la figure suivante, sachant que nous ne nous intéressons qu'aux cartes Real6410 et PIC.
+
+\includegraphics[width=0.8\textwidth]{images/Recap.png}
+
+  \subsection{Objectif}
+L'objectif est de pouvoir avoir une communication entre l'intelligence artificielle et le matériel, au travers des deux cartes. La carte PIC servant à la collecte des données, et l'autre servant à les transformer en données compréhensibles par l'IA, et lui transmettre via TCP/IP. Bien entendu, le chemin inverse doit être possible.
+
+\newpage
+
 \section{Installation et prise en main de la carte Real6410}
 \subsection{Installation du kernel linux et de l'interface graphique}
 Une première installation de la carte a été faite en suivant les indications de la documentation. Avec cette configuration 
@@ -73,6 +84,13 @@ en root. Nous avons donc ajouté un mot de passe (peu sécurisé) : root.
 \section{La communication}
 \subsection{IA - Real6410}
 
+Ici, ce sont les sockets TCP qui ont été utilisées. Ne comportant pas de défi technique majeur, et l'interface réseau fonctionnant, cela a pu être implémenté sans problème.
+
+Le principe se base sur une socket 'cliente', qui envoie les données vers l'IA, et une socket 'serveur' qui reçoit les données de l'IA.
+
+
+
+
 \subsection{Real6410 - matériel}
 \subsubsection{Le bus CAN}
 Afin de communiquer entre la carte Real6410 et le matériel, la solution choisie est le bus CAN (Control Area Network). Cette 
@@ -87,7 +105,18 @@ Le bus CAN est basé sur un système de messages avec un identifiant (standard o
 particularité permettra par la suite de différencier les différents types de matériels présents sur la smart grid 
 (producteur, consommateurs, stockage).
 
+
 \subsubsection{Côté Real6410}
+La gestion du bus CAN sur la carte Real6410 aurait dû être la plus simple et la plus rapide. Il en a malheureusement été autrement.\\
+En effet, il nous a été impossible, malgré tous nos efforts, de faire fonctionner cette partie (importante) du projet.
+
+Le driver intégré au noyau (mcp2515) possède très peu de documentation, et il est difficile de comprendre son fonctionnement. Après plusieurs échecs en essayant d'écrire directement sur le driver (la carte 'freeze' à chaque tentative d'écriture), nous nous sommes tournés vers une autre solution ayant visiblement fait ses preuves :
+
+Les interfaces virtuelles semblent offrir une solution très pratique et très facile d'utilisation : il s'agit d'émuler une interface réseau qui en fait transmet sur le bus CAN. Cependant, nous avons essuyé deux échecs : nous avons tout d'abord recompilé le noyau avec l'option 'vcan' activée, ce qui aurait dû créer les interfaces, mais cela n'a pas été le cas. Il nous a alors été impossible de les créer manuellement, la carte ne possédant pas 'iproute2'. Nous avons alors essayé de compiler ce module, mais on ne peut le compiler que sur la carte, et celle-ci ne possède pas de compilateur ni de commande 'make'. \\
+Nous avons alors mis en oeuvre la solution de framework proposée par BerliOS.de, mais il nous a été impossible de la faire fonctionner. Le module semble chargé, mais l'interface n'est pas créée.
+
+La mise en place de la communication par bus CAN a donc été un échec. Cela est dû à un manque de connaissances techniques, mais également à la difficulté de trouver une documentation, et un système très épuré (pas de fichiers /etc/modules ou /etc/network/interfaces) par exemple.
+
 
 \subsubsection{Côté Matériel}
 Du côté matériel, on utilise le module eCAN du dsPIC33F, pour communiquer avec la carte qui supportera l'IA. Pour ce faire, 
@@ -130,6 +159,11 @@ loopback. \\
 On peut voir par ces captures, que dans un premier temps le buffer d'envoi (le 0) est vide. Ensuite celui-ci est rempli par 
 la fonction \texttt{sendMsg}. Avant que le bit de requète de l'envoi ne soit mis à 1 (à la fin de la fonction \texttt{sendMsg}), 
 le buffer de réception reste vide. Les données sont ensuite reçues dans ce buffer, comme le montre la dernière capture.
+
+\newpage
+\section{Bilan}
+\subsection{Comparaison aux objectifs}
+\subsection{Analyse}
 
 \newpage
 %sources si il en faut
