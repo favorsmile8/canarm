@@ -25,6 +25,8 @@ typedef struct{
 /*Measurement mabe by the PIC and needed by IA*/
 typedef struct{
   int current; /*current to take from or give to the device*/
+  char OVT;/*0 pas de surchauffe, 1 surchauffe*/
+  char error;/*0 pas d'erreur, 1 erreur*/
 }ARMtoPIC;
 
 

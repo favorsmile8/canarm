@@ -82,6 +82,52 @@ en root. Nous avons donc ajouté un mot de passe (peu sécurisé) : root.
 
 \newpage
 \section{La communication}
+
+\subsection{Les structures de données}
+Le graphique suivant montre comment les données sont transmisent.\\
+\includegraphics[width=0.9\textwidth]{images/transfert_donnees.png} \\
+Le transfert de la carte Real6410 vers le PIC passe par le bus CAN. Dans un sens on fait passer la consigne en courant, 
+et dans l'autre un retour sur l'état du matériel est fait. On fait alors passer un bit d'erreur, un bit de surchaufe (OVT), 
+l'intensité et la tension des super capacités, ainsi que la tension du bus entre le PIC et le matériel. \\
+Le composant =/= est la partie électronique qui permet de piloter les batteries et super capacités. \\
+\begin{verbatim}
+/*Structure containing information needed by the PIC
+ *an given by IA*/
+typedef struct{
+  unsigned int
+    error :1, /*an error occured*/
+    OVT :1, /*over temperature*/
+    unused :14, /*not used bits*/
+    Isign :1, /*Sign of the current (0 positive, 1 negative)*/
+    Isc :15; /*Current in the device*/
+  short int Vsc; /*tension super capa*/
+  short int Vdc; /*tension bus super capa*/
+}PICtoARM;
+
+/*Measurement mabe by the PIC and needed by IA*/
+typedef struct{
+  short int current; /*current to take from or give to the device*/
+  char OVT;/*0 pas de surchauffe, 1 surchauffe*/
+  char error;/*0 pas d'erreur, 1 erreur*/
+}ARMtoPIC;
+\end{verbatim}
+Nous avons ici les deux structures de données utilisable pour transmettre les information de l'IA vers le matériel ainsi 
+que dans l'autre sens. \\
+L'avantage de la structure \texttt{PICtoARM} est qu'elle utilise 8 octets, ce qui est la capacité maximale du bus CAN. 
+Les tensions et intensités y sont exprimées sous la forme d'un bit de signe (charge ou décharge de la batterie), et de la 
+valeur absolue de l'intensité (ou de la tension). \\
+La valeur attendue par le DAC (Digital Analog Converter) du PIC attend en argument une valeur sur 16 bits qui est formée 
+par le complément à 2 des 15 bits de valeur absolue, et le bit de signe. Comme le montre l'extrait de la documentation 
+du dsPIC33F suivant.
+\begin{verbatim}
+0x7FFF = most positive output voltage
+0x0000 = mid point output voltage
+0xFFFF = value just below the midpoint
+0x8000 = minimum output voltage
+\end{verbatim}
+De même, dans l'autre sens on peut avoir la valeur flotante de la valeur retournée par le PIC en faisant la conversion 
+inverse.
+
 \subsection{IA - Real6410}
 
 Ici, ce sont les sockets TCP qui ont été utilisées. Ne comportant pas de défi technique majeur, et l'interface réseau fonctionnant, cela a pu être implémenté sans problème.
@@ -193,6 +239,25 @@ Nous sommes conscients qu'il doit être possible de faire fonctionner cette inte
   \item Documentation pour les sockets can : \\
     \href{http://www.kernel.org/doc/Documentation/networking/can.txt}
          {http://www.kernel.org/doc/Documentation/networking/can.txt} 
+\end{itemize}
+
+\newpage
+\section{Glossaire}
+\begin{itemize}
+  \item ARM : Architecture de processeurs (32 bits Restricted Instruction Set Computer)
+  \item CAN : Control Area Network
+  \item DAC : Digital Analog Converter
+  \item dsPIC : Digital Signal Programmated Integrated Circuit
+  \item DMA : Direct Memory Access
+  \item eCAN : enanced Control Area Network
+  \item IA : Intelligence Artificielle
+  \item IP : Internet Protocol
+  \item mcp2xxx : Composant électronique permettant de transformer un signal SPI en CAN
+  \item OVT : Over Temperature
+  \item PIC : Programmated Integrated Circuit : architecture de micro-controleurs
+  \item SPI : Serial Peripheral Interface
+  \item TCP : Transmission Control Protocol
+  \item x86 : Architecture de processeurs, c'est celle présente sur les ordinateurs individuels 
 \end{itemize}
 
 \end{document}
