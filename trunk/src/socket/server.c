@@ -7,35 +7,14 @@
 #include <netinet/in.h>
 
 #define MAXPENDING 5    /* Max connection requests */
-#define BUFFSIZE 32
+#define BUFFSIZE 1024
 void Die(char *mess) { perror(mess); exit(1); }
-
-
-void HandleClient(int sock) {
-    char buffer[BUFFSIZE];
-    int received = -1;
-    /* Receive message */
-    if ((received = recv(sock, buffer, BUFFSIZE, 0)) < 0) {
-      Die("Failed to receive initial bytes from client");
-    }
-
-      /* Send back received data */
-      if (send(sock, buffer, received, 0) != received) {
-        Die("Failed to send bytes to client");
-      }
-      /* Check for more data */
-      if ((received = recv(sock, buffer, BUFFSIZE, 0)) < 0) {
-        Die("Failed to receive additional bytes from client");
-      }
-    
-    close(sock);
-}
-
 
 
 int main(int argc, char *argv[]) {
     int serversock, clientsock;
     struct sockaddr_in echoserver, echoclient;
+    char buffer[BUFFSIZE];
 
     if (argc != 2) {
       fprintf(stderr, "USAGE: echoserver <port>\n");
@@ -70,8 +49,13 @@ int main(int argc, char *argv[]) {
                   &clientlen)) < 0) {
         Die("Failed to accept client connection");
       }
-      fprintf(stdout, "Client connected: %s\n",
+      printf("Client connected: %s\n",
                       inet_ntoa(echoclient.sin_addr));
-      HandleClient(clientsock);
+
+      
+      recv(clientsock, buffer, BUFFSIZE, 0);
+      printf("Recu : %s \n", buffer);
+      // Instructions to CAN
+
     }
 }
