@@ -163,7 +163,15 @@ le buffer de réception reste vide. Les données sont ensuite reçues dans ce bu
 \newpage
 \section{Bilan}
 \subsection{Comparaison aux objectifs}
+Comme dit précédemment, tous les objectifs n'ont malheureusement pas été remplis. En effet, bien que la carte PIC communique en CAN, ce n'est pas le cas de la Real6410.
+
 \subsection{Analyse}
+On peut constater que l'échec partiel de ce projet n'est pas dû à un manque de temps, mais plutôt à un manque de documentation sur l'utilisation du pilote, ainsi qu'à un manque de connaissances techniques. 
+
+Nous avons pourtant essayé toutes les techniques que nous avons trouvé, en se heurtant à des problèmes de compilation, à des fichiers manquants sur le système 'épuré' de la carte Real6410, etc.
+
+Nous sommes conscients qu'il doit être possible de faire fonctionner cette interface, mais peut être faudrait-il soumettre le problème à l'occasion d'un projet de TX52 dans le département EE.
+
 
 \newpage
 %sources si il en faut
@@ -173,6 +181,18 @@ le buffer de réception reste vide. Les données sont ensuite reçues dans ce bu
     \href{http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en532302}
          {http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en532303} 
     Les ``application note'' en bas de la page peuvent beaucoup aider.
+  \item Documentation de la carte Real6410 : \\
+    \href{http://s3c6410kits.googlecode.com/files/Real6410\%20Linux\%20Development\%20manual.pdf}
+         {http://s3c6410kits.googlecode.com/files/Real6410\%20Linux\%20Development\%20manual.pdf} 
+  \item Documentation du driver mcp2515 : \\
+    \href{http://s3c6410kits.googlecode.com/files/MCP2515.pdf}
+         {http://s3c6410kits.googlecode.com/files/MCP2515.pdf} 
+  \item Code du driver mcp2515 : \\
+    \href{http://www.hackchina.com/en/r/21458/mcp2515.c\_\_html}
+         {http://www.hackchina.com/en/r/21458/mcp2515.c\_\_html} 
+  \item Documentation pour les sockets can : \\
+    \href{http://www.kernel.org/doc/Documentation/networking/can.txt}
+         {http://www.kernel.org/doc/Documentation/networking/can.txt} 
 \end{itemize}
 
 \end{document}
