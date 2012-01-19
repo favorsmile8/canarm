@@ -116,17 +116,11 @@ que dans l'autre sens. \\
 L'avantage de la structure \texttt{PICtoARM} est qu'elle utilise 8 octets, ce qui est la capacité maximale du bus CAN. 
 Les tensions et intensités y sont exprimées sous la forme d'un bit de signe (charge ou décharge de la batterie), et de la 
 valeur absolue de l'intensité (ou de la tension). \\
-La valeur attendue par le DAC (Digital Analog Converter) du PIC attend en argument une valeur sur 16 bits qui est formée 
-par le complément à 2 des 15 bits de valeur absolue, et le bit de signe. Comme le montre l'extrait de la documentation 
-du dsPIC33F suivant.
-\begin{verbatim}
-0x7FFF = most positive output voltage
-0x0000 = mid point output voltage
-0xFFFF = value just below the midpoint
-0x8000 = minimum output voltage
-\end{verbatim}
-De même, dans l'autre sens on peut avoir la valeur flotante de la valeur retournée par le PIC en faisant la conversion 
-inverse.
+Le controle des moteurs passe par du PWM (Pulse Width Modulation), cela permet de générer un signal alternatif avec le 
+rapport cyclique souhaité. Ainsi le signe permettra de savoir quel cannal PWM il faut utiliser, et la valeur absolue 
+servira alors à trouver le rapport cyclique qu'il faut. A titre d'example, si la valeur 0x0 est passé, le rapport cyclique 
+sera nul, il n'y aura pas de tension moyenne en sortie du module PWM. Si la valeur absolue (Isc) est 0x7FFF, alors la valeur
+ en sortie sera maximale.
 
 \subsection{IA - Real6410}
 
@@ -255,6 +249,7 @@ Nous sommes conscients qu'il doit être possible de faire fonctionner cette inte
   \item mcp2xxx : Composant électronique permettant de transformer un signal SPI en CAN
   \item OVT : Over Temperature
   \item PIC : Programmated Integrated Circuit : architecture de micro-controleurs
+  \item PWM : Pulse Width Modulation
   \item SPI : Serial Peripheral Interface
   \item TCP : Transmission Control Protocol
   \item x86 : Architecture de processeurs, c'est celle présente sur les ordinateurs individuels 
