@@ -1,0 +1,1 @@
+Communication via bus CAN entre deux cartes microcontroleur (ARM et PIC) et une IA.
